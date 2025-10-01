@@ -53,3 +53,42 @@ vendor/bin/phpunit --testsuite=failed
 - **PHPUnit**: 10.0+, 11.0+
 - **Integration**: Works with existing PHPUnit configurations and other extensions
 
+## Test Project
+
+This repository includes a `test-project/` directory that serves as an integration test for the extension. It demonstrates how the extension works in a real PHPUnit environment.
+
+### What is the Test Project?
+
+The `test-project/` is a minimal PHP project that:
+- Has its own `composer.json` with PHPUnit as a dependency
+- Includes sample test files with intentionally failing tests
+- Demonstrates the full extension workflow in isolation
+- Serves as a reference implementation for integration
+
+### How to Use the Test Project
+
+1. **Navigate to the test project**:
+   ```bash
+   cd test-project
+   ```
+
+2. **Install dependencies** (automatically done):
+   ```bash
+   composer install
+   ```
+
+3. **Run the initial test suite** (creates failures):
+   ```bash
+   vendor/bin/phpunit
+   ```
+   This will run the tests with several intentional failures and errors:
+
+4. **Test the --testsuite=failed functionality**:
+   ```bash
+   vendor/bin/phpunit --testsuite=failed
+   ```
+
+Should re-run only the failing tests.
+
+5. Uncomment what makes the tests passes.
+Should see `No recorded failed tests found. Running empty test suite.`

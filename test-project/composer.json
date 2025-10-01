@@ -1,0 +1,37 @@
+{
+    "name": "test/integration-project",
+    "description": "Test project for phpunit-run-failed extension",
+    "type": "project",
+    "authors": [
+        {
+            "name": "Test Author",
+            "email": "test@example.com"
+        }
+    ],
+    "require": {
+        "php": "^8.0"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^10.0",
+        "mracos/phpunit-run-failed": "dev-main"
+    },
+    "repositories": [
+        {
+            "type": "path",
+            "url": "../",
+            "options": {
+                "symlink": false
+            }
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "TestProject\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "TestProject\\Tests\\": "tests/"
+        }
+    }
+}
