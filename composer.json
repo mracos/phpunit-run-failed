@@ -31,6 +31,14 @@
     },
     "scripts": {
         "test": "phpunit",
+        "cs-fix": "php-cs-fixer fix",
+        "cs-check": "php-cs-fixer fix --dry-run --diff",
+        "phpstan": "phpstan analyse --no-progress",
+        "quality": [
+            "@cs-check",
+            "@phpstan",
+            "@test"
+        ]
     },
     "extra": {
         "phpunit": {
