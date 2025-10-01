@@ -6,7 +6,10 @@ parameters:
     level: 8
     paths:
         - src
-    bootstrapFiles:
-        - vendor/autoload.php
     phpVersion: 80000
-    reportUnmatchedIgnoredErrors: false
+    ignoreErrors:
+        - '#^Parameter \$event of method PhpUnitRunFailed\\(Errored|Failed)TestTracker::notify\(\) has invalid type PHPUnit\\Event\\Test\\(Errored|Failed)\.$#'
+        - '#^Parameter \$test of method PhpUnitRunFailed\\(Errored|Failed)TestTracker::getTestIdentifier\(\) has invalid type PHPUnit\\Event\\Code\\TestMethod\.$#'
+        - '#^Parameter \$event of method PhpUnitRunFailed\\ExecutionFinishedTracker::notify\(\) has invalid type PHPUnit\\Event\\TestRunner\\ExecutionFinished\.$#'
+        - '#^Parameter \$(configuration|parameters) of method PhpUnitRunFailed\\FailedTestRerunnerExtension::bootstrap\(\) has invalid type PHPUnit\\(TextUI\\Configuration\\Configuration|Runner\\Extension\\ParameterCollection)\.$#'
+        - '#^Call to method (test|throwable|className|methodName)\(\) on an unknown class PHPUnit\\Event\\(Test\\(Errored|Failed)|Code\\TestMethod)\.$#'

@@ -11,6 +11,9 @@ final class TestResultCollector
      */
     private static array $failedTests = [];
 
+    /**
+     * @param array{class: string, method: string, file?: string, line?: int, failure?: string, error?: string} $testData
+     */
     public static function addFailedTest(string $testId, array $testData): void
     {
         self::$failedTests[$testId] = $testData;

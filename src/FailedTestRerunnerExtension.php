@@ -43,6 +43,9 @@ final class FailedTestRerunnerExtension implements Extension
 
     private function handleFailedTestsuite(): void
     {
+        $storage = new FailureStorage();
+        $failedTests = $storage->getFailedTests();
+
         if (empty($failedTests)) {
             fwrite(STDERR, "No failed tests found to re-run.\n");
             exit(0);
@@ -50,15 +53,15 @@ final class FailedTestRerunnerExtension implements Extension
 
         fwrite(STDERR, 'Running ' . count($failedTests) . " failed tests...\n");
 
-        $filterPattern = $this->generateFilterPattern();
+        $filterPattern = $this->generateFilterPattern($failedTests);
         $this->reexecWithFilter($filterPattern);
     }
 
-    private function generateFilterPattern(): string
+    /**
+     * @param array<string, array{class: string, method: string, file?: string, line?: int, failure?: string, error?: string}> $failedTests
+     */
+    private function generateFilterPattern(array $failedTests): string
     {
-        $storage = new FailureStorage();
-        $failedTests = $storage->getFailedTests();
-
         $patterns = [];
         foreach ($failedTests as $testId => $testInfo) {
             $className = $testInfo['class'];
