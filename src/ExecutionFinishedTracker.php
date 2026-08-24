@@ -9,47 +9,44 @@ use PHPUnit\Event\TestRunner\ExecutionFinishedSubscriber;
 
 final class ExecutionFinishedTracker implements ExecutionFinishedSubscriber
 {
+    private FailureStorage $storage;
+
+    /** @var resource */
+    private $output;
+
+    /**
+     * @param resource|null $output defaults to STDERR
+     */
+    public function __construct(?FailureStorage $storage = null, $output = null)
+    {
+        $this->storage = $storage ?? new FailureStorage();
+        $this->output = $output ?? STDERR;
+    }
+
     public function notify(ExecutionFinished $event): void
     {
         $failedTests = TestResultCollector::getFailedTests();
-        $wasRunningFailedTests = $this->isRunningFailedTests();
-
-        $storage = new FailureStorage();
+        $wasRunningFailedTests = RerunCommand::isFailedTestsuiteRun();
 
         if (empty($failedTests)) {
             if ($wasRunningFailedTests) {
-                fwrite(STDERR, "\nAll previously failed tests now pass! Clearing failure records.\n");
-                $storage->clearFailedTests();
-            } else {
-                $storage->clearFailedTests();
+                fwrite($this->output, "\nAll previously failed tests now pass! Clearing failure records.\n");
             }
+
+            $this->storage->clearFailedTests();
+
             return;
         }
 
-        $storage->saveFailedTests($failedTests);
+        $this->storage->saveFailedTests($failedTests);
 
         if ($wasRunningFailedTests) {
-            fwrite(STDERR, "\n" . count($failedTests) . " test(s) still failing after re-run.\n");
-        } else {
-            fwrite(STDERR, "\n" . count($failedTests) . " test(s) failed. Use --testsuite=failed to re-run only failed tests:\n");
-            fwrite(STDERR, "  vendor/bin/phpunit --testsuite=failed\n");
-        }
-    }
+            fwrite($this->output, "\n" . count($failedTests) . " test(s) still failing after re-run.\n");
 
-    private function isRunningFailedTests(): bool
-    {
-        $args = $GLOBALS['argv'] ?? $_SERVER['argv'] ?? [];
-
-        foreach ($args as $i => $arg) {
-            if ($arg === '--testsuite' && isset($args[$i + 1]) && $args[$i + 1] === 'failed') {
-                return true;
-            }
-            if ($arg === '--testsuite=failed') {
-                return true;
-            }
+            return;
         }
 
-        return false;
+        fwrite($this->output, "\n" . count($failedTests) . " test(s) failed. Use --testsuite=failed to re-run only failed tests:\n");
+        fwrite($this->output, "  vendor/bin/phpunit --testsuite=failed\n");
     }
-
 }

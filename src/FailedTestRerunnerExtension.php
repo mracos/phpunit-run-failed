@@ -13,9 +13,9 @@ final class FailedTestRerunnerExtension implements Extension
 {
     public function bootstrap(Configuration $configuration, Facade $facade, ParameterCollection $parameters): void
     {
-        if ($this->isRunningFailedTestsuite()) {
-            $this->handleFailedTestsuite();
-            return;
+        if (RerunCommand::isFailedTestsuiteRun()) {
+            // The re-run replaces this process, so nothing else may happen here.
+            exit($this->rerunFailedTests(new FailureStorage()));
         }
 
         TestResultCollector::clearFailedTests();
@@ -25,85 +25,26 @@ final class FailedTestRerunnerExtension implements Extension
         $facade->registerSubscriber(new ExecutionFinishedTracker());
     }
 
-    private function isRunningFailedTestsuite(): bool
+    /**
+     * @return int the exit code the current process should terminate with
+     */
+    private function rerunFailedTests(FailureStorage $storage): int
     {
-        $args = $GLOBALS['argv'] ?? $_SERVER['argv'] ?? [];
-
-        foreach ($args as $i => $arg) {
-            if ($arg === '--testsuite' && isset($args[$i + 1]) && $args[$i + 1] === 'failed') {
-                return true;
-            }
-            if ($arg === '--testsuite=failed') {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    private function handleFailedTestsuite(): void
-    {
-        $storage = new FailureStorage();
         $failedTests = $storage->getFailedTests();
 
         if (empty($failedTests)) {
             fwrite(STDERR, "No failed tests found to re-run.\n");
-            exit(0);
+
+            return 0;
         }
 
         fwrite(STDERR, 'Running ' . count($failedTests) . " failed tests...\n");
 
-        $filterPattern = $this->generateFilterPattern($failedTests);
-        $this->reexecWithFilter($filterPattern);
+        $command = RerunCommand::build($failedTests);
+        fwrite(STDERR, 'Executing: ' . $command . "\n");
+
+        passthru($command, $exitCode);
+
+        return $exitCode;
     }
-
-    /**
-     * @param array<string, array{class: string, method: string, file?: string, line?: int, failure?: string, error?: string}> $failedTests
-     */
-    private function generateFilterPattern(array $failedTests): string
-    {
-        $patterns = [];
-        foreach ($failedTests as $testId => $testInfo) {
-            $className = $testInfo['class'];
-            $methodName = $testInfo['method'];
-            $patterns[] = preg_quote($className . '::' . $methodName, '/') . '\\b';
-        }
-
-        return '(' . implode('|', $patterns) . ')';
-    }
-
-    private function reexecWithFilter(string $filterPattern): void
-    {
-        if (isset($GLOBALS['argv'])) {
-            $args = $GLOBALS['argv'];
-            $newArgs = [];
-            $skipNext = false;
-
-            foreach ($args as $i => $arg) {
-                if ($skipNext) {
-                    $skipNext = false;
-                    continue;
-                }
-
-                if ($arg === '--testsuite' && isset($args[$i + 1]) && $args[$i + 1] === 'failed') {
-                    $skipNext = true;
-                    continue;
-                }
-                if ($arg === '--testsuite=failed') {
-                    continue;
-                }
-
-                $newArgs[] = $arg;
-            }
-
-            $newArgs[] = '--filter=' . $filterPattern;
-
-            $command = implode(' ', array_map('escapeshellarg', $newArgs));
-            fwrite(STDERR, 'Executing: ' . $command . "\n");
-
-            passthru($command, $exitCode);
-            exit($exitCode);
-        }
-    }
-
 }
