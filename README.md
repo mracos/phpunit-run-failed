@@ -1,5 +1,10 @@
 # PHPUnit Run Failed
 
+[![Packagist Version](https://img.shields.io/packagist/v/mracos/phpunit-run-failed)](https://packagist.org/packages/mracos/phpunit-run-failed)
+[![PHP Version](https://img.shields.io/packagist/dependency-v/mracos/phpunit-run-failed/php)](https://packagist.org/packages/mracos/phpunit-run-failed)
+[![Downloads](https://img.shields.io/packagist/dt/mracos/phpunit-run-failed)](https://packagist.org/packages/mracos/phpunit-run-failed)
+[![License](https://img.shields.io/packagist/l/mracos/phpunit-run-failed)](LICENSE)
+
 PHPUnit extension to re-run only failed tests.
 
 ## Installation
