@@ -10,7 +10,7 @@ final class FailureStorage
 {
     private string $storageFile;
 
-    public function __construct(string $storageFile = null)
+    public function __construct(?string $storageFile = null)
     {
         $this->storageFile = $storageFile ?? $this->getDefaultStorageFile();
     }
